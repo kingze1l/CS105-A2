@@ -75,7 +75,33 @@ public:
 	}
 };
 
-	int main()
+class Enrolement {
+private:
+	Student student;
+	Course course;
+	Grade* grade; // poly pointer to grade class
+
+
+public:
+	Enrolement(Student s, Course c ): student(s), course(c), grade(nullptr) {} // constructor to intialize the data;
+
+	void addGrade(Grade* g) { grade = g; } // add grade to the student
+	void generateReport() {
+		cout << "Report for " << student.getName() << " in " << course.getCourseName() << ":" << endl;
+		if (grade != nullptr) {
+			cout << "Final Grade: " << grade->calculateGrade() << "/100" << endl;
+		}
+		else {
+			cout << "Grade not yet assigned!" << endl;
+		}
+	}
+};
+
+	
+
+
+
+int main()
 	{
 
 		Student student1(101, "Sami jan", "Kabul", "0781234567"); //creating object of student class
@@ -88,8 +114,13 @@ public:
 		aliceGrade.setInternalMark(85);
 		aliceGrade.setFinalMark(90);
 		
-
+		
 		cout << "Alice's total grade: " << aliceGrade.calculateGrade() << endl;
+		//TESTING ENROLEMENT
+		Enrolement enrolement1(student1, math);
+		enrolement1.addGrade(&aliceGrade);
+		enrolement1.generateReport();
 
+		return 0;
 	}
 

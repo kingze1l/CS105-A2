@@ -53,17 +53,43 @@ public:
 		cout << "Teacher: " << teacher << endl;
 	}
 };
+class Grade {
+protected:
+	float internalMark;//protected so small classes can access it
+	float finalMark;
 
+public:
+	virtual float calculateGrade() = 0; //pure virtual function
+	
+	//setter for internal and final marks
+	void setInternalMark(float iMark) { internalMark = iMark; }
+	void setFinalMark(float fMark) { finalMark = fMark; }
+};
+//inheritance from grade class
+class PrimaryGrade : public Grade {
+public:
+	// overwrite virtual function ie: polymorphism
+	float calculateGrade() override {
+		return 0.3 * internalMark + 0.7 * finalMark;
 
+	}
+};
 
-int main()
-{
+	int main()
+	{
 
-	Student student1(101, "Sami jan", "Kabul", "0781234567"); //creating object of student class
-	student1.display();
-	//test course 
-	Course math("Math", "M101", "Mathematics", "Mr. John");
-	math.display();
-    std::cout << "Hello World!\n";
-}
+		Student student1(101, "Sami jan", "Kabul", "0781234567"); //creating object of student class
+		student1.display();
+		//test course 
+		Course math("Math", "M101", "Mathematics", "Mr. John");
+		math.display();
+		std::cout << "Hello World!\n";
+		PrimaryGrade aliceGrade;
+		aliceGrade.setInternalMark(85);
+		aliceGrade.setFinalMark(90);
+		
+
+		cout << "Alice's total grade: " << aliceGrade.calculateGrade() << endl;
+
+	}
 

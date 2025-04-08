@@ -99,7 +99,14 @@ bool DataManager::loadStudents(std::vector<Student>& students) {
     std::ifstream file(STUDENTS_FILE);
     if (!file) {
         std::cerr << "Warning: Could not open file " << STUDENTS_FILE << std::endl;
-        return false;
+
+		std::ofstream createFile(STUDENTS_FILE);
+        if (!createFile) {
+            std::cerr << "Error: Could not create file " << STUDENTS_FILE << std::endl;
+            return false;
+        }
+		createFile.close(); //close the new file after creatting it 
+		return false;
     }
 
     students.clear();
@@ -125,6 +132,12 @@ bool DataManager::loadCourses(std::vector<Course>& courses) {
     std::ifstream file(COURSES_FILE);
     if (!file) {
         std::cerr << "Warning: Could not open file " << COURSES_FILE << std::endl;
+        std::ofstream createFile(COURSES_FILE);
+        if (!createFile) {
+            std::cerr << "Error: Could not create file " << COURSES_FILE << std::endl;
+            return false;
+        }
+        createFile.close();
         return false;
     }
 
@@ -149,6 +162,12 @@ bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
     std::ifstream file(USERS_FILE);
     if (!file) {
         std::cerr << "Warning: Could not open file " << USERS_FILE << std::endl;
+        std::ofstream createFile(USERS_FILE);
+        if (!createFile) {
+            std::cerr << "Error: Could not create file " << USERS_FILE << std::endl;
+            return false;
+        }
+        createFile.close();
         return false;
     }
 
@@ -186,6 +205,12 @@ bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
     std::ifstream file(ENROLLMENTS_FILE);
     if (!file) {
         std::cerr << "Warning: Could not open file " << ENROLLMENTS_FILE << std::endl;
+        std::ofstream createFile(ENROLLMENTS_FILE);
+        if (!createFile) {
+            std::cerr << "Error: Could not create file " << ENROLLMENTS_FILE << std::endl;
+            return false;
+        }
+        createFile.close();
         return false;
     }
 

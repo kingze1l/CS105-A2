@@ -128,19 +128,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Admin.cpp" />
+    <ClCompile Include="AuthSystem.cpp" />
     <ClCompile Include="Course.cpp" />
     <ClCompile Include="CS105-A2.cpp" />
+    <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="Enrolment.cpp" />
     <ClCompile Include="Grade.cpp" />
     <ClCompile Include="Student.cpp" />
+    <ClCompile Include="StudentUser.cpp" />
+    <ClCompile Include="Teacher.cpp" />
     <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Admin.h" />
+    <ClInclude Include="AuthSystem.h" />
     <ClInclude Include="Course.h" />
+    <ClInclude Include="DataManager.h" />
     <ClInclude Include="Enrolment.h" />
     <ClInclude Include="Grade.h" />
     <ClInclude Include="Student.h" />
+    <ClInclude Include="StudentUser.h" />
+    <ClInclude Include="Teacher.h" />
     <ClInclude Include="User.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

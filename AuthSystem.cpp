@@ -14,6 +14,7 @@ AuthSystem::AuthSystem() {
     users.push_back(std::make_unique<StudentUser>("student1", "student123", testStudent));
 }
 
+
 User* AuthSystem::login(const std::string& username, const std::string& password) {
     for (auto& user : users) {
         if (user->getUsername() == username && user->authenticate(password)) {

@@ -7,34 +7,28 @@
 #include "Admin.h"
 #include "Teacher.h"
 #include "StudentUser.h"
-#include "DataManager.h"  // ADDED: Include the DataManager header
+#include "DataManager.h"
 
 using namespace std;
 
-// Global data stores
+// Global data stores (already defined globally, no redeclaration needed)
 vector<Student> students;
 vector<Course> courses;
 vector<Enrolment*> enrollments;
 
-// ADDED: This function initializes test data if needed
+// Initialize test data if needed
 void initializeTestData() {
-    // Add some test data if files are empty
     if (students.empty()) {
         students.emplace_back(101, "Ali Khan", "123 Main St", "0700112233");
         students.emplace_back(102, "Sara Ahmed", "456 Oak Ave", "0722334455");
     }
-
     if (courses.empty()) {
         courses.emplace_back("Mathematics", "MATH101", "Basic Calculus", "Dr. Smith");
         courses.emplace_back("English", "ENG101", "Grammar and Composition", "Ms. Johnson");
     }
-
     if (enrollments.empty()) {
-        // Create some enrollments
         enrollments.push_back(new Enrolment(students[0], courses[0]));
         enrollments.push_back(new Enrolment(students[0], courses[1]));
-
-        // Add sample grades
         PrimaryGrade* grade1 = new PrimaryGrade();
         grade1->setInternalMark(75);
         grade1->setFinalMark(85);
@@ -42,6 +36,7 @@ void initializeTestData() {
     }
 }
 
+// Clean up dynamically allocated enrollments
 void cleanupEnrollments() {
     for (auto* enrollment : enrollments) {
         delete enrollment;
@@ -50,39 +45,33 @@ void cleanupEnrollments() {
 }
 
 int main() {
-    // ADDED: Create data manager
     DataManager dataManager;
 
-    // ADDED: Try to load data from files
+    // Load data into global vectors (no local duplicates)
     bool studentsLoaded = dataManager.loadStudents(students);
     bool coursesLoaded = dataManager.loadCourses(courses);
     bool enrollmentsLoaded = dataManager.loadEnrollments(enrollments, students, courses);
 
-    // ADDED: If any data couldn't be loaded, initialize with test data
     if (!studentsLoaded || !coursesLoaded || !enrollmentsLoaded) {
-        initializeTestData();
+        initializeTestData();  // Populates global vectors if loading fails
     }
 
-    // Create authentication system
     AuthSystem authSystem;
+    vector<std::unique_ptr<User>> loadedUsers;  // For future integration
+    bool usersLoaded = dataManager.loadUsers(loadedUsers, students);
 
-    // Main login loop
-    string username, password;
     bool running = true;
+    string username, password;
 
     while (running) {
         cout << "\n===== Pokeno South Primary School - Student Management System =====\n";
         cout << "Login\n";
-        cout << "Username: ";
-        cin >> username;
-
-        cout << "Password: ";
-        cin >> password;
+        cout << "Username: "; getline(cin, username);  // Improved: Allows spaces in input
+        cout << "Password: "; getline(cin, password);
 
         User* currentUser = authSystem.login(username, password);
 
         if (currentUser) {
-            // User is authenticated, show appropriate menu based on role
             string role = currentUser->getRole();
 
             if (role == "admin") {
@@ -93,7 +82,7 @@ int main() {
                         int choice;
                         admin->showMenu();
                         cin >> choice;
-
+                        cin.ignore(); // Clear the newline character
                         switch (choice) {
                         case 1:
                             admin->createStudent(students);
@@ -102,7 +91,7 @@ int main() {
                             admin->createCourse(courses);
                             break;
                         case 3:
-                            // View all users functionality
+                            admin->ViewAllUsers(authSystem.getUsers());
                             break;
                         case 4:
                             adminRunning = false;
@@ -117,11 +106,10 @@ int main() {
                 Teacher* teacher = dynamic_cast<Teacher*>(currentUser);
                 if (teacher) {
                     teacher->showMenu();
-                    // Additional teacher functionality can be added here
                 }
             }
             else if (role == "student") {
-                // Student functionality is already handled in StudentUser::showMenu()
+                // Student menu handled in AuthSystem::login via StudentUser::showMenu()
             }
         }
         else {
@@ -131,12 +119,13 @@ int main() {
         cout << "\nDo you want to exit the program? (y/n): ";
         char exitChoice;
         cin >> exitChoice;
+        cin.ignore();  // Clear buffer after char input
         if (exitChoice == 'y' || exitChoice == 'Y') {
             running = false;
         }
     }
 
-    // ADDED: Save data before exiting
+    // Save data before exiting
     dataManager.saveStudents(students);
     dataManager.saveCourses(courses);
     dataManager.saveEnrollments(enrollments);

@@ -144,6 +144,40 @@ bool DataManager::loadCourses(std::vector<Course>& courses) {
 
     return true;
 }
+bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
+    const std::vector<Student>& students) {
+    std::ifstream file(USERS_FILE);
+    if (!file) {
+        std::cerr << "Warning: Could not open file " << USERS_FILE << std::endl;
+        return false;
+    }
+
+    users.clear();
+    std::string line;
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string username, password, role, rollnoStr;
+
+        std::getline(ss, username, '|');
+        std::getline(ss, password, '|');
+        std::getline(ss, role, '|');
+
+        if (role == "admin") {
+            users.push_back(std::make_unique<Admin>(username, password));
+        }
+        else if (role == "teacher") {
+            users.push_back(std::make_unique<Teacher>(username, password));
+        }
+        else if (role == "student" && std::getline(ss, rollnoStr, '|')) {
+            int rollno = std::stoi(rollnoStr);
+            // Find the student by roll number
+            Student studentObj = findStudentByRollNo(rollno, students);
+            users.push_back(std::make_unique<StudentUser>(username, password, studentObj));
+        }
+    }
+
+    return true;
+}
 
 // Load enrollments from file
 bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,

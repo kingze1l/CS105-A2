@@ -9,4 +9,10 @@ class AuthSystem {
 public:
     AuthSystem();
     User* login(const std::string& username, const std::string& password);
+
+    const std::vector<std::unique_ptr<User>>& getUsers() const { return users; }
+
+	void addUser(std::unique_ptr<User> user) {
+		users.push_back(std::move(user));
+	}
 };

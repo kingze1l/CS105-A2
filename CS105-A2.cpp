@@ -94,6 +94,9 @@ int main() {
                             admin->ViewAllUsers(authSystem.getUsers());
                             break;
                         case 4:
+                            admin->enrollStudent(enrollments, students, courses);  // New case
+                            break;
+                        case 5:  // Shifted from 4 to 5
                             adminRunning = false;
                             break;
                         default:

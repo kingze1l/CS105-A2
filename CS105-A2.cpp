@@ -82,25 +82,15 @@ int main() {
                         int choice;
                         admin->showMenu();
                         cin >> choice;
-                        cin.ignore(); // Clear the newline character
+                        cin.ignore();
                         switch (choice) {
-                        case 1:
-                            admin->createStudent(students);
-                            break;
-                        case 2:
-                            admin->createCourse(courses);
-                            break;
-                        case 3:
-                            admin->ViewAllUsers(authSystem.getUsers());
-                            break;
-                        case 4:
-                            admin->enrollStudent(enrollments, students, courses);  // New case
-                            break;
-                        case 5:  // Shifted from 4 to 5
-                            adminRunning = false;
-                            break;
-                        default:
-                            cout << "Invalid choice. Please try again.\n";
+                        case 1: admin->createStudent(students); break;
+                        case 2: admin->createCourse(courses); break;
+                        case 3: admin->ViewAllUsers(authSystem.getUsers()); break;
+                        case 4: admin->viewAllStudents(students); break;  // test case 
+                        case 5: admin->enrollStudent(enrollments, students, courses); break;
+                        case 6: adminRunning = false; break;
+                        default: cout << "Invalid choice. Please try again.\n";
                         }
                     }
                 }

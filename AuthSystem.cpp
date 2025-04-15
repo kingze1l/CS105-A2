@@ -10,7 +10,7 @@ AuthSystem::AuthSystem() {
 
     // Add default users
     users.push_back(std::make_unique<Admin>("admin", "admin123"));
-    users.push_back(std::make_unique<Teacher>("teacher", "teacher123"));
+    users.push_back(std::make_unique<Teacher>("teacher", "teacher123", "deafualt teacher"));
     users.push_back(std::make_unique<StudentUser>("student1", "student123", testStudent));
 }
 

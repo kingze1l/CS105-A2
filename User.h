@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>  // For std::unique_ptr or smart pointers
-
+#include <iostream> // For std::cout
 
 class User {
 protected:

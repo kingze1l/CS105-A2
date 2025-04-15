@@ -34,7 +34,7 @@ bool DataManager::saveCourses(const std::vector<Course>& courses) {
         file << course.getCourseName() << "|"
             << course.getCourseCode() << "|"
             << course.getDescription() << "|"
-            << course.getTeacher() << std::endl;
+            << course.getTeacherUsername() << std::endl;
     }
 
     return true;
@@ -185,7 +185,7 @@ bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
             users.push_back(std::make_unique<Admin>(username, password));
         }
         else if (role == "teacher") {
-            users.push_back(std::make_unique<Teacher>(username, password));
+            users.push_back(std::make_unique<Teacher>(username, password, "teacher"+ username));
         }
         else if (role == "student" && std::getline(ss, rollnoStr, '|')) {
             int rollno = std::stoi(rollnoStr);

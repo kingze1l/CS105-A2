@@ -84,11 +84,11 @@ int main() {
                         cin >> choice;
                         cin.ignore();
                         switch (choice) {
-                        case 1: admin->createStudent(students); break;
-                        case 2: admin->createCourse(courses); break;
+                        case 1: admin->createStudent(authSystem ,students); break;
+                        case 2: admin->createCourse(courses, authSystem); break;
                         case 3: admin->ViewAllUsers(authSystem.getUsers()); break;
                         case 4: admin->viewAllStudents(students); break;  // test case 
-                        case 5: admin->enrollStudent(enrollments, students, courses); break;
+                        case 5: admin->enrollStudent(enrollments, students, courses, authSystem); break;
                         case 6: adminRunning = false; break;
                         default: cout << "Invalid choice. Please try again.\n";
                         }

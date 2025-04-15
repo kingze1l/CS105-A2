@@ -4,31 +4,38 @@
 #include <iostream>
 #include "Enrolment.h"
 #include <iomanip>
+#include "AuthSystem.h"
+#include "StudentUser.h"
+#include "Teacher.h"
+#include "DataManager.h"
+#include "User.h"
+#include <vector>
+
 
 Admin::Admin(const std::string& uname, const std::string& pwd)
     : User(uname, pwd, "admin") {
 }
 
+
+
+
 void Admin::showMenu() {
     printAdminHeader();
     std::cout << "1. Create Student Account\n"
-        << "2. Create Course\n"
-        << "3. View All Users\n"
-        << "4. View All Students\n"  // test
-        << "5. Enroll Student in Course\n"
+        << "2. Create Teacher Account\n"  // New option
+        << "3. Create Course\n"
+        << "4. Enroll Student in Course\n"
+        << "5. View All Users\n"
         << "6. Exit\n"
         << "Enter your choice: ";
 }
-void Admin::createCourse(std::vector<Course>& courses) {
-    std::string name, code, description, teacher;
+void Admin::createCourse(std::vector<Course>& courses, const AuthSystem& authSystem) {
+    std::string name, code, description;
 
     std::cout << "\n--- Create New Course ---\n";
-    std::cout << "Course Name: ";
-    std::getline(std::cin, name);
-    std::cout << "Course Code: ";
-    std::getline(std::cin, code);
+    std::cout << "Course Name: "; std::getline(std::cin, name);
+    std::cout << "Course Code: "; std::getline(std::cin, code);
 
-    // Check for duplicate course code
     for (const auto& course : courses) {
         if (course.getCourseCode() == code) {
             std::cout << "Error: Course code already exists!\n";
@@ -36,33 +43,96 @@ void Admin::createCourse(std::vector<Course>& courses) {
         }
     }
 
-    std::cout << "Description: ";
-    std::getline(std::cin, description);
-    std::cout << "Teacher: ";
-    std::getline(std::cin, teacher);
+    std::cout << "Description: "; std::getline(std::cin, description);
 
-    courses.emplace_back(name, code, description, teacher);
+    // NEW: Teacher selection
+    std::cout << "Available Teachers:\n";
+    int i = 1;
+    std::vector<std::string> teacherUsernames;
+    for (const auto& user : authSystem.getUsers()) {
+        if (user->getRole() == "teacher") {
+            std::cout << i++ << ". " << user->getUsername() << "\n";
+            teacherUsernames.push_back(user->getUsername());
+        }
+    }
+
+    if (teacherUsernames.empty()) {
+        std::cout << "No teachers available. Create a teacher first.\n";
+        return;
+    }
+
+    int choice;
+    std::cout << "Select teacher (1-" << teacherUsernames.size() << "): ";
+    std::cin >> choice;
+    std::cin.ignore();
+
+    courses.emplace_back(name, code, description, teacherUsernames[choice - 1]);
     std::cout << "Course created successfully!\n";
 }
-void Admin::createStudent(std::vector<Student>& students) {
-    std::string name, address, contact;
+//void Admin::createStudent(std::vector<Student>& students) {
+//    std::string name, address, contact;
+//    int rollno;
+//
+//    std::cout << "\n---- Create Student Account ----\n";
+//    std::cout << "Enter Roll No: "; std::cin >> rollno;
+//    std::cin.ignore();
+//
+//    std::cout << "Enter Name: ";
+//    std::getline(std::cin, name);
+//
+//    std::cout << "Enter Address: ";
+//    std::getline(std::cin, address);
+//
+//    std::cout << "Enter Contact: ";
+//    std::getline(std::cin, contact);
+//
+//    students.emplace_back(rollno, name, address, contact);
+//    std::cout << "Student account created successfully!\n";
+//}
+//void Admin::createTeacher(AuthSystem& authSystem) {
+//    std::string username, password, name;
+//
+//    std::cout << "\n--- Create Teacher Account ---\n";
+//    std::cout << "Username: "; std::getline(std::cin, username);
+//    std::cout << "Password: "; std::getline(std::cin, password);
+//    std::cout << "Teacher's Full Name: "; std::getline(std::cin, name);
+//
+//    authSystem.addUser(std::make_unique<Teacher>(username, password, name));
+//    std::cout << "Teacher account created successfully!\n";
+//}
+void Admin::createStudent(AuthSystem& authSystem, std::vector<Student>& students) {
+    std::string username, password, name, address, contact;
     int rollno;
 
     std::cout << "\n---- Create Student Account ----\n";
+    std::cout << "Username: "; std::getline(std::cin, username);
+    std::cout << "Password: "; std::getline(std::cin, password);
     std::cout << "Enter Roll No: "; std::cin >> rollno;
     std::cin.ignore();
 
-    std::cout << "Enter Name: ";
-    std::getline(std::cin, name);
-
-    std::cout << "Enter Address: ";
-    std::getline(std::cin, address);
-
-    std::cout << "Enter Contact: ";
-    std::getline(std::cin, contact);
+    std::cout << "Enter Name: "; std::getline(std::cin, name);
+    std::cout << "Enter Address: "; std::getline(std::cin, address);
+    std::cout << "Enter Contact: "; std::getline(std::cin, contact);
 
     students.emplace_back(rollno, name, address, contact);
+    authSystem.addUser(std::make_unique<StudentUser>(username, password, students.back()));
     std::cout << "Student account created successfully!\n";
+}
+void Admin::createTeacher(AuthSystem& authSystem) {
+    std::string username, password, name;
+
+    std::cout << "\n--- Create Teacher Account ---\n";
+    std::cout << "Username: ";
+    std::getline(std::cin, username);
+
+    std::cout << "Password: ";
+    std::getline(std::cin, password);
+
+    std::cout << "Teacher's Full Name: ";
+    std::getline(std::cin, name);
+
+    authSystem.addUser(std::make_unique<Teacher>(username, password, name));
+    std::cout << "Teacher account created successfully!\n";
 }
 
 
@@ -168,7 +238,10 @@ Course* Admin::selectCourse(const std::vector<Course>& courses) const {
     return const_cast<Course*>(&courses[choice - 1]);
 }
 
-void Admin::enrollStudent(std::vector<Enrolment*>& enrollments, const std::vector<Student>& students, const std::vector<Course>& courses) {
+void Admin::enrollStudent(std::vector<Enrolment*>& enrollments,
+    const std::vector<Student>& students,
+    const std::vector<Course>& courses,
+    const AuthSystem& authSystem) {
     std::cout << "\n--- Enroll Student in Course ---\n";
     Student* student = selectStudent(students);
     if (!student) {
@@ -176,21 +249,38 @@ void Admin::enrollStudent(std::vector<Enrolment*>& enrollments, const std::vecto
         return;
     }
 
-    Course* course = selectCourse(courses);
-    if (!course) {
-        std::cout << "Enrollment cancelled: No course selected.\n";
+    // Show available courses with teachers
+    std::cout << "\nAvailable Courses:\n";
+    for (size_t i = 0; i < courses.size(); ++i) {
+        std::cout << i + 1 << ". " << courses[i].getCourseCode()
+            << " - " << courses[i].getCourseName()
+            << " (Teacher: " << courses[i].getTeacherUsername() << ")\n";
+    }
+
+    if (courses.empty()) {
+        std::cout << "No courses available to enroll in.\n";
         return;
     }
 
-    // Check for duplicate enrollment
+    int courseChoice;
+    std::cout << "Select course (1-" << courses.size() << "): ";
+    std::cin >> courseChoice;
+    std::cin.ignore();
+
+    if (courseChoice < 1 || courseChoice > static_cast<int>(courses.size())) {
+        std::cout << "Invalid course selection.\n";
+        return;
+    }
+
+    // Check for existing enrollment
     for (const auto* enrollment : enrollments) {
         if (enrollment->getStudent().getRollno() == student->getRollno() &&
-            enrollment->getCourse().getCourseCode() == course->getCourseCode()) {
+            enrollment->getCourse().getCourseCode() == courses[courseChoice - 1].getCourseCode()) {
             std::cout << "Error: Student already enrolled in this course!\n";
             return;
         }
     }
 
-    enrollments.push_back(new Enrolment(*student, *course));
+    enrollments.push_back(new Enrolment(*student, courses[courseChoice - 1]));
     std::cout << "Student enrolled successfully!\n";
 }

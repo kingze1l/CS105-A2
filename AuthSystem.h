@@ -15,4 +15,8 @@ public:
 	void addUser(std::unique_ptr<User> user) {
 		users.push_back(std::move(user));
 	}
+
+	void clearUsers() {
+		users.clear();
+	}
 };

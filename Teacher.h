@@ -12,7 +12,7 @@ public:
     // CHANGED: Added name parameter
     Teacher(const std::string& username, const std::string& password,
         const std::string& name);
-
+	std::string getTeacherName() const; // NEW: Getter for teacher's name
     // NEW: Added method to show assigned courses
     void showAssignedCourses(const std::vector<Course>& courses) const;
 

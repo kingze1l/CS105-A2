@@ -1,10 +1,8 @@
-// DataManager.cpp
 #include "DataManager.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-// Save students to file
 bool DataManager::saveStudents(const std::vector<Student>& students) {
     std::ofstream file(STUDENTS_FILE);
     if (!file) {
@@ -22,7 +20,6 @@ bool DataManager::saveStudents(const std::vector<Student>& students) {
     return true;
 }
 
-// Save courses to file
 bool DataManager::saveCourses(const std::vector<Course>& courses) {
     std::ofstream file(COURSES_FILE);
     if (!file) {
@@ -40,7 +37,6 @@ bool DataManager::saveCourses(const std::vector<Course>& courses) {
     return true;
 }
 
-// Save enrollments to file
 bool DataManager::saveEnrollments(const std::vector<Enrolment*>& enrollments) {
     std::ofstream file(ENROLLMENTS_FILE);
     if (!file) {
@@ -49,14 +45,11 @@ bool DataManager::saveEnrollments(const std::vector<Enrolment*>& enrollments) {
     }
 
     for (const auto& enrollment : enrollments) {
-        // Save student roll number and course code to identify them later
         file << enrollment->getStudent().getRollno() << "|"
             << enrollment->getCourse().getCourseCode();
 
-        // Check if there's a grade associated
         Grade* grade = enrollment->getGrade();
         if (grade) {
-            // Using the new accessor methods we added to Grade class
             file << "|" << grade->getInternalMark()
                 << "|" << grade->getFinalMark();
         }
@@ -66,8 +59,6 @@ bool DataManager::saveEnrollments(const std::vector<Enrolment*>& enrollments) {
     return true;
 }
 
-// Save users to file - note that passwords would be in plain text here
-// In a real system, you'd want to hash these passwords
 bool DataManager::saveUsers(const std::vector<std::unique_ptr<User>>& users) {
     std::ofstream file(USERS_FILE);
     if (!file) {
@@ -77,14 +68,12 @@ bool DataManager::saveUsers(const std::vector<std::unique_ptr<User>>& users) {
 
     for (const auto& user : users) {
         file << user->getUsername() << "|"
-            << "password" << "|"  // In a real system, you would save the actual password (hashed)
+            << user->getPassword() << "|"  // Save the actual password
             << user->getRole();
 
-        // If it's a student user, save the roll number
         if (user->getRole() == "student") {
             StudentUser* studentUser = dynamic_cast<StudentUser*>(user.get());
             if (studentUser) {
-                // Using the new accessor method we added to StudentUser class
                 file << "|" << studentUser->getStudent().getRollno();
             }
         }
@@ -94,19 +83,17 @@ bool DataManager::saveUsers(const std::vector<std::unique_ptr<User>>& users) {
     return true;
 }
 
-// Load students from file
 bool DataManager::loadStudents(std::vector<Student>& students) {
     std::ifstream file(STUDENTS_FILE);
     if (!file) {
         std::cerr << "Warning: Could not open file " << STUDENTS_FILE << std::endl;
-
-		std::ofstream createFile(STUDENTS_FILE);
+        std::ofstream createFile(STUDENTS_FILE);
         if (!createFile) {
             std::cerr << "Error: Could not create file " << STUDENTS_FILE << std::endl;
             return false;
         }
-		createFile.close(); //close the new file after creatting it 
-		return false;
+        createFile.close();
+        return false;
     }
 
     students.clear();
@@ -127,7 +114,6 @@ bool DataManager::loadStudents(std::vector<Student>& students) {
     return true;
 }
 
-// Load courses from file
 bool DataManager::loadCourses(std::vector<Course>& courses) {
     std::ifstream file(COURSES_FILE);
     if (!file) {
@@ -157,6 +143,7 @@ bool DataManager::loadCourses(std::vector<Course>& courses) {
 
     return true;
 }
+
 bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
     const std::vector<Student>& students) {
     std::ifstream file(USERS_FILE);
@@ -185,11 +172,10 @@ bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
             users.push_back(std::make_unique<Admin>(username, password));
         }
         else if (role == "teacher") {
-            users.push_back(std::make_unique<Teacher>(username, password, "teacher"+ username));
+            users.push_back(std::make_unique<Teacher>(username, password, "teacher" + username));
         }
         else if (role == "student" && std::getline(ss, rollnoStr, '|')) {
             int rollno = std::stoi(rollnoStr);
-            // Find the student by roll number
             Student studentObj = findStudentByRollNo(rollno, students);
             users.push_back(std::make_unique<StudentUser>(username, password, studentObj));
         }
@@ -198,7 +184,6 @@ bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
     return true;
 }
 
-// Load enrollments from file
 bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
     const std::vector<Student>& students,
     const std::vector<Course>& courses) {
@@ -214,7 +199,6 @@ bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
         return false;
     }
 
-    // Clean up existing enrollments
     for (auto* enrollment : enrollments) {
         delete enrollment;
     }
@@ -230,14 +214,11 @@ bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
 
         int rollno = std::stoi(rollnoStr);
 
-        // Find the student and course
         Student student = findStudentByRollNo(rollno, students);
         Course course = findCourseByCode(courseCode, courses);
 
-        // Create a new enrollment
         Enrolment* enrollment = new Enrolment(student, course);
 
-        // If grade information exists, add it
         if (std::getline(ss, internalMarkStr, '|') &&
             std::getline(ss, finalMarkStr, '|')) {
 
@@ -262,7 +243,6 @@ Student DataManager::findStudentByRollNo(int rollNo, const std::vector<Student>&
             return student;
         }
     }
-    // Return a default student if not found - in a real system, you'd handle this differently
     return Student(0, "Unknown", "Unknown", "Unknown");
 }
 
@@ -272,6 +252,5 @@ Course DataManager::findCourseByCode(const std::string& code, const std::vector<
             return course;
         }
     }
-    // Return a default course if not found
     return Course("Unknown", "Unknown", "Unknown", "Unknown");
 }

@@ -14,10 +14,14 @@ void StudentUser::addEnrolment(Enrolment* enrolment) {
 
 void StudentUser::showMenu() {
     std::cout << "\n=== STUDENT PORTAL ===\n";
+    std::cout << "Logged in as: " << getUsername() << "\n";
+    std::cout << "Student Name: " << student.getName() << "\n";
+    std::cout << "Roll Number: " << student.getRollno() << "\n";
+    displayEnrolledCourses();
     for (auto* enrolment : enrolments) {
         enrolment->generateReport();
     }
     std::cout << "Enter any key to logout: ";
     std::string tmp;
-    std::cin >> tmp;
+    std::getline(std::cin, tmp);
 }

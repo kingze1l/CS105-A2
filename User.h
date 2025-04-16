@@ -1,31 +1,24 @@
 #pragma once
 #include <string>
-#include <memory>  // For std::unique_ptr or smart pointers
-#include <iostream> // For std::cout
+#include <memory>
+#include <iostream>
 
 class User {
 protected:
-	std::string username;
-	std::string password;
-	std::string role;  // admin, teacher  or user
+    std::string username;
+    std::string password;
+    std::string role;
 
 public:
-	//constructor for User
-	User(const std::string& uanme, const std::string& pwd, const std::string& r);
+    User(const std::string& uanme, const std::string& pwd, const std::string& r);
+    virtual ~User() = default;
+    virtual void showMenu() = 0;
+    bool authenticate(const std::string& input) const;
 
-	//virtual destructor for the proper cleanup of the memory
-	virtual ~User() = default;
+    std::string getUsername() const;
+    std::string getRole() const;
+    std::string getPassword() const { return password; }
 
-	virtual void showMenu() = 0; // pure virtual function to implement in derived classes ie. child classes
-
-	bool authenticate(const std::string& input) const; // authenticate the user 
-
-	//getters for the username, password and role
-	std::string getUsername() const;
-	std::string getRole() const;
-
-	User(const User&) = delete; //copy constructor deleted 
-	User& operator=(const User&) = delete; //copy assignment operator deleted because we don't want to copy the user object
-
-
+    User(const User&) = delete;
+    User& operator=(const User&) = delete;
 };

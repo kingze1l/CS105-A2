@@ -3,15 +3,24 @@
 #include "Teacher.h"
 #include "StudentUser.h"
 #include <iostream>
+#include <fstream>
 
 AuthSystem::AuthSystem() {
-    // Create a test student first
-    Student testStudent(1, "John Doe", "123 Main St", "555-1234");
+    // Check if users.txt exists and is not empty
+    std::ifstream file("users.txt");
+    if (file.good()) {
+        std::string line;
+        if (std::getline(file, line) && !line.empty()) {
+            // File exists and has data, don't create default users
+            file.close();
+            return;
+        }
+    }
+    file.close();
 
-    // Add default users
+    // If users.txt doesn't exist or is empty, create default users
     users.push_back(std::make_unique<Admin>("admin", "admin123"));
     users.push_back(std::make_unique<Teacher>("teacher", "teacher123", "deafualt teacher"));
-    users.push_back(std::make_unique<StudentUser>("student1", "student123", testStudent));
 }
 
 

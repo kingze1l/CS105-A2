@@ -19,5 +19,9 @@ public:
     std::string getAddress() const;
     std::string getContact() const;
 
+    void setName(const std::string& n);
+    void setAddress(const std::string& addr);
+    void setContact(const std::string& cnt);
+
     void display() const;
 };

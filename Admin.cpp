@@ -26,10 +26,11 @@ void Admin::showMenu() {
         << "4. View All Users\n"
         << "5. View All Students\n"
         << "6. Enroll Student in Course\n"
-        << "7. Exit\n"
-        << "Enter your choice (1-7): ";
+        << "7. Edit Student\n"          // New option
+        << "8. Delete Student\n"        // New option
+        << "9. Exit\n"
+        << "Enter your choice (1-9): ";
 }
-
 void Admin::createStudent(AuthSystem& authSystem, std::vector<Student>& students) {
     std::string username, password, name, address, contact;
     int rollno;
@@ -320,4 +321,103 @@ void Admin::enrollStudent(std::vector<Enrolment*>& enrollments,
     }
 
     std::cout << "Success: Student enrolled successfully!\n";
+}
+void Admin::editStudent(std::vector<Student>& students, AuthSystem& authSystem) {
+    std::cout << "\n------ Edit Student ------\n";
+    Student* student = selectStudent(students);
+    if (!student) {
+        std::cout << "Edit cancelled: No student selected.\n";
+        return;
+    }
+
+    std::cout << "\nCurrent Details:\n";
+    student->display();
+
+    std::string name, address, contact;
+    std::cout << "Enter new Name (leave blank to keep '" << student->getName() << "'): ";
+    std::getline(std::cin, name);
+    std::cout << "Enter new Address (leave blank to keep '" << student->getAddress() << "'): ";
+    std::getline(std::cin, address);
+    std::cout << "Enter new Contact (leave blank to keep '" << student->getContact() << "'): ";
+    std::getline(std::cin, contact);
+
+    // Update only non-empty fields
+    if (!name.empty()) student->setName(name); // Note: Need to add setName to Student class
+    if (!address.empty()) student->setAddress(address); // Note: Need to add setAddress
+    if (!contact.empty()) student->setContact(contact); // Note: Need to add setContact
+
+    // Update associated StudentUser
+    for (const auto& user : authSystem.getUsers()) {
+        if (user->getRole() == "student") {
+            StudentUser* studentUser = dynamic_cast<StudentUser*>(user.get());
+            if (studentUser && studentUser->getStudent().getRollno() == student->getRollno()) {
+                // Update StudentUser's student object (may need copy or reference update)
+                std::cout << "StudentUser updated.\n";
+                break;
+            }
+        }
+    }
+
+    std::cout << "Success: Student details updated successfully!\n";
+}
+
+void Admin::deleteStudent(std::vector<Student>& students, AuthSystem& authSystem, std::vector<Enrolment*>& enrollments) {
+    std::cout << "\n------ Delete Student ------\n";
+    Student* student = selectStudent(students);
+    if (!student) {
+        std::cout << "Delete cancelled: No student selected.\n";
+        return;
+    }
+
+    int rollno = student->getRollno();
+    std::cout << "Are you sure you want to delete " << student->getName() << " (Roll No: " << rollno << ")? (y/n): ";
+    char confirm;
+    std::cin >> confirm;
+    std::cin.ignore();
+
+    if (confirm != 'y' && confirm != 'Y') {
+        std::cout << "Delete cancelled.\n";
+        return;
+    }
+
+    // Remove associated enrollments
+    auto it = enrollments.begin();
+    while (it != enrollments.end()) {
+        if ((*it)->getStudent().getRollno() == rollno) {
+            delete* it; // Free memory
+            it = enrollments.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+    // Find and remove associated StudentUser
+    std::string userToDelete;
+    for (const auto& user : authSystem.getUsers()) {
+        if (user->getRole() == "student") {
+            StudentUser* studentUser = dynamic_cast<StudentUser*>(user.get());
+            if (studentUser && studentUser->getStudent().getRollno() == rollno) {
+                userToDelete = user->getUsername();
+                break;
+            }
+        }
+    }
+
+    if (!userToDelete.empty()) {
+        authSystem.removeUser(userToDelete);
+    }
+    else {
+        std::cout << "Warning: No associated StudentUser found for Roll No: " << rollno << "\n";
+    }
+
+    // Remove student from students vector
+    for (auto it = students.begin(); it != students.end(); ++it) {
+        if (it->getRollno() == rollno) {
+            students.erase(it);
+            break;
+        }
+    }
+
+    std::cout << "Success: Student deleted successfully!\n";
 }

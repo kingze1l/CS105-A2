@@ -27,6 +27,16 @@ void AuthSystem::addUser(std::unique_ptr<User> user) {
 void AuthSystem::clearUsers() {
     users.clear();
 }
+bool AuthSystem::removeUser(const std::string& username) {
+    for (auto it = users.begin(); it != users.end(); ++it) {
+        if ((*it)->getUsername() == username) {
+            users.erase(it);
+            return true;
+        }
+    }
+    std::cout << "Error: User with username '" << username << "' not found.\n";
+    return false;
+}
 
 User* AuthSystem::login(const std::string& username, const std::string& password) {
     for (auto& user : users) {

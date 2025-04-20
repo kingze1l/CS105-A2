@@ -25,6 +25,9 @@ public:
         const std::vector<Student>& students,
         const std::vector<Course>& courses,
         const AuthSystem& authSystem);
+    void editStudent(std::vector<Student>& students, AuthSystem& authSystem);
+    void deleteStudent(std::vector<Student>& students, AuthSystem& authSystem, std::vector<Enrolment*>& enrollments);
+
 private:
     void printAdminHeader() const;
 };

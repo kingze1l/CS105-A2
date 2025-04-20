@@ -12,4 +12,5 @@ public:
     const std::vector<std::unique_ptr<User>>& getUsers() const { return users; }
     void addUser(std::unique_ptr<User> user);
     void clearUsers();
+    bool removeUser(const std::string& username);
 };

@@ -1,4 +1,4 @@
 1|Ali Khan|123 Main St|0700112233
 102|Sara Ahmed|456 Oak Ave|0722334455 
-1|John Doe|123 Main St|555-1234 789
+1|shams jan|123 Main St|555-1234 789
 122|samiullah gulwali jan|16a taylor street blockhouse bay|0221220884

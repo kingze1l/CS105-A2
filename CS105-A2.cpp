@@ -189,7 +189,9 @@ int main() {
                             case 4: admin->ViewAllUsers(authSystem.getUsers()); break;
                             case 5: admin->viewAllStudents(students); break;
                             case 6: admin->enrollStudent(enrollments, students, courses, authSystem); break;
-                            case 7: adminRunning = false; break;
+                            case 7: admin->editStudent(students, authSystem); break; // New case
+                            case 8: admin->deleteStudent(students, authSystem, enrollments); break; // New case
+                            case 9: adminRunning = false; break;
                             default: cout << "Invalid choice. Please try again.\n";
                             }
                             if (adminChoice != 7) {

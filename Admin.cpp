@@ -1,7 +1,3 @@
-//
-
-//-------------------------------------------------------------
-//  Admin.cpp
 #include "Admin.h"
 #include "Student.h"
 #include "Course.h"
@@ -11,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <conio.h> // For _getch()
 
 Admin::Admin(const std::string& uname, const std::string& pwd)
     : User(uname, pwd, "admin") {
@@ -49,7 +46,7 @@ void Admin::createStudent(AuthSystem& authSystem, std::vector<Student>& students
             return;
         }
     }
-    std::cout << "Password: "; std::getline(std::cin, password);
+    std::cout << "Password: "; password = getPasswordWithMask();
     if (password.empty()) {
         std::cout << "Error: Password cannot be empty.\n";
         return;
@@ -100,7 +97,7 @@ void Admin::createTeacher(AuthSystem& authSystem) {
             return;
         }
     }
-    std::cout << "Password: "; std::getline(std::cin, password);
+    std::cout << "Password: "; password = getPasswordWithMask();
     if (password.empty()) {
         std::cout << "Error: Password cannot be empty.\n";
         return;

@@ -29,6 +29,9 @@ private:
     void printAdminHeader() const;
 };
 
+// Declaration for password masking function
+extern std::string getPasswordWithMask();
+
 
 //#pragma once
 //#include "User.h"

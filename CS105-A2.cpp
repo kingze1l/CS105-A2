@@ -2,11 +2,12 @@
 #include <vector>
 #include <iomanip>
 #include <limits>
+#include <conio.h> // For _getch()
 #include "Student.h"
 #include "Course.h"
 #include "Enrolment.h"
 #include "AuthSystem.h"
-#include "Admin.h"
+#include "Admin.h" // Updated to include getPasswordWithMask declaration
 #include "Teacher.h"
 #include "StudentUser.h"
 #include "DataManager.h"
@@ -23,6 +24,25 @@ void clearScreen() {
 #else
     system("clear");
 #endif
+}
+
+string getPasswordWithMask() {
+    string password;
+    char ch;
+    while ((ch = _getch()) != '\r') { // '\r' is Enter key
+        if (ch == '\b') { // Backspace
+            if (!password.empty()) {
+                password.pop_back();
+                cout << "\b \b"; // Erase last asterisk
+            }
+        }
+        else if (ch >= 32 && ch <= 126) { // Printable ASCII characters
+            password += ch;
+            cout << '*';
+        }
+    }
+    cout << endl;
+    return password;
 }
 
 void displayHeader(const string& title) {
@@ -134,12 +154,12 @@ int main() {
         if (choice == 1) {
             displayHeader("Login");
             cout << "Available Roles: Admin, Teacher, Student\n";
-            cout << "Default Credentials: (Please note this has been shown for the purpose of testing\n";
+            cout << "Default Credentials:\n";
             cout << "- Admin: admin/admin123\n";
             cout << "- Teacher: teacher/teacher123\n";
             cout << "- Student: student1/student123\n\n";
             cout << "Username: "; getline(cin, username);
-            cout << "Password: "; getline(cin, password);
+            cout << "Password: "; password = getPasswordWithMask();
 
             User* currentUser = authSystem.login(username, password);
 

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <iomanip>
+#include <limits>
 #include "Student.h"
 #include "Course.h"
 #include "Enrolment.h"
@@ -14,6 +16,21 @@ using namespace std;
 vector<Student> students;
 vector<Course> courses;
 vector<Enrolment*> enrollments;
+
+void clearScreen() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+void displayHeader(const string& title) {
+    clearScreen();
+    cout << "\n=======================================\n";
+    cout << "  " << title << "\n";
+    cout << "=======================================\n\n";
+}
 
 void initializeTestData() {
     if (students.empty()) {
@@ -56,14 +73,12 @@ int main() {
     vector<std::unique_ptr<User>> loadedUsers;
     bool usersLoaded = dataManager.loadUsers(loadedUsers, students);
     if (usersLoaded) {
-        // Clear existing users to avoid duplicates
         authSystem.clearUsers();
         for (auto& user : loadedUsers) {
             authSystem.addUser(std::move(user));
         }
     }
 
-    // Add default student user if not already present
     bool student1Exists = false;
     for (const auto& user : authSystem.getUsers()) {
         if (user->getUsername() == "student1") {
@@ -72,7 +87,6 @@ int main() {
         }
     }
     if (!student1Exists) {
-        // Find or create student with roll number 1
         Student* student1 = nullptr;
         for (auto& student : students) {
             if (student.getRollno() == 1) {
@@ -87,7 +101,6 @@ int main() {
         authSystem.addUser(std::make_unique<StudentUser>("student1", "student123", *student1));
     }
 
-    // Load enrollments for all StudentUsers
     for (const auto& user : authSystem.getUsers()) {
         if (user->getRole() == "student") {
             StudentUser* studentUser = dynamic_cast<StudentUser*>(user.get());
@@ -101,121 +114,184 @@ int main() {
     string username, password;
 
     while (running) {
-        cout << "\n===== Pokeno South Primary School - Student Management System =====\n";
-        cout << "Login\n";
-        cout << "Username: "; getline(cin, username);
-        cout << "Password: "; getline(cin, password);
+        displayHeader("Pokeno South Primary School - Student Management System");
+        cout << "Welcome! Please select an option:\n";
+        cout << "1. Login\n";
+        cout << "2. Exit\n";
+        cout << "Enter your choice (1-2): ";
 
-        User* currentUser = authSystem.login(username, password);
+        int choice;
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number.\n";
+            cout << "Press Enter to continue...";
+            cin.ignore();
+            continue;
+        }
+        cin.ignore();
 
-        if (currentUser) {
-            string role = currentUser->getRole();
-            if (role == "admin") {
-                Admin* admin = dynamic_cast<Admin*>(currentUser);
-                if (admin) {
-                    bool adminRunning = true;
-                    while (adminRunning) {
-                        int choice;
-                        admin->showMenu();
-                        cin >> choice;
-                        cin.ignore();
-                        switch (choice) {
-                        case 1: admin->createStudent(authSystem, students); break;
-                        case 2: admin->createTeacher(authSystem); break;
-                        case 3: admin->createCourse(courses, authSystem); break;
-                        case 4: admin->ViewAllUsers(authSystem.getUsers()); break;
-                        case 5: admin->viewAllStudents(students); break;
-                        case 6: admin->enrollStudent(enrollments, students, courses, authSystem); break;
-                        case 7: adminRunning = false; break;
-                        default: cout << "Invalid choice. Please try again.\n";
+        if (choice == 1) {
+            displayHeader("Login");
+            cout << "Available Roles: Admin, Teacher, Student\n";
+            cout << "Default Credentials: (Please note this has been shown for the purpose of testing\n";
+            cout << "- Admin: admin/admin123\n";
+            cout << "- Teacher: teacher/teacher123\n";
+            cout << "- Student: student1/student123\n\n";
+            cout << "Username: "; getline(cin, username);
+            cout << "Password: "; getline(cin, password);
+
+            User* currentUser = authSystem.login(username, password);
+
+            if (currentUser) {
+                string role = currentUser->getRole();
+                if (role == "admin") {
+                    Admin* admin = dynamic_cast<Admin*>(currentUser);
+                    if (admin) {
+                        bool adminRunning = true;
+                        while (adminRunning) {
+                            displayHeader("Admin Menu - Welcome, " + admin->getUsername());
+                            admin->showMenu();
+                            int adminChoice;
+                            if (!(cin >> adminChoice)) {
+                                cin.clear();
+                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                cout << "Invalid input. Please enter a number.\n";
+                                cout << "Press Enter to continue...";
+                                cin.ignore();
+                                continue;
+                            }
+                            cin.ignore();
+                            switch (adminChoice) {
+                            case 1: admin->createStudent(authSystem, students); break;
+                            case 2: admin->createTeacher(authSystem); break;
+                            case 3: admin->createCourse(courses, authSystem); break;
+                            case 4: admin->ViewAllUsers(authSystem.getUsers()); break;
+                            case 5: admin->viewAllStudents(students); break;
+                            case 6: admin->enrollStudent(enrollments, students, courses, authSystem); break;
+                            case 7: adminRunning = false; break;
+                            default: cout << "Invalid choice. Please try again.\n";
+                            }
+                            if (adminChoice != 7) {
+                                cout << "\nPress Enter to continue...";
+                                cin.ignore();
+                            }
                         }
                     }
                 }
-            }
-            else if (role == "teacher") {
-                Teacher* teacher = dynamic_cast<Teacher*>(currentUser);
-                if (teacher) {
-                    bool teacherRunning = true;
-                    while (teacherRunning) {
-                        int choice;
-                        teacher->showMenu();
-                        cin >> choice;
-                        cin.ignore();
-                        switch (choice) {
-                        case 1: teacher->showAssignedCourses(courses); break;
-                        case 2: {
-                            cout << "\n--- Select Course to Grade ---\n";
-                            vector<Course> teacherCourses;
-                            for (const auto& course : courses) {
-                                if (course.getTeacherUsername() == teacher->getUsername()) {
-                                    teacherCourses.push_back(course);
-                                }
+                else if (role == "teacher") {
+                    Teacher* teacher = dynamic_cast<Teacher*>(currentUser);
+                    if (teacher) {
+                        bool teacherRunning = true;
+                        while (teacherRunning) {
+                            displayHeader("Teacher Menu - Welcome, " + teacher->getTeacherName());
+                            teacher->showMenu();
+                            int teacherChoice;
+                            if (!(cin >> teacherChoice)) {
+                                cin.clear();
+                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                cout << "Invalid input. Please enter a number.\n";
+                                cout << "Press Enter to continue...";
+                                cin.ignore();
+                                continue;
                             }
-                            if (teacherCourses.empty()) {
-                                cout << "No courses assigned.\n";
-                                break;
-                            }
-                            for (size_t i = 0; i < teacherCourses.size(); ++i) {
-                                cout << i + 1 << ". " << teacherCourses[i].getCourseName()
-                                    << " (" << teacherCourses[i].getCourseCode() << ")\n";
-                            }
-                            int courseChoice;
-                            cout << "Select course (1-" << teacherCourses.size() << "): ";
-                            cin >> courseChoice;
                             cin.ignore();
-                            if (courseChoice < 1 || courseChoice > static_cast<int>(teacherCourses.size())) {
-                                cout << "Invalid course selection.\n";
-                                break;
-                            }
-                            cout << "\n--- Select Student to Grade ---\n";
-                            vector<Enrolment*> courseEnrollments;
-                            for (auto* enrollment : enrollments) {
-                                if (enrollment->getCourse().getCourseCode() == teacherCourses[courseChoice - 1].getCourseCode()) {
-                                    courseEnrollments.push_back(enrollment);
+                            switch (teacherChoice) {
+                            case 1: teacher->showAssignedCourses(courses); break;
+                            case 2: {
+                                displayHeader("Grade Assignment");
+                                cout << "--- Select Course to Grade ---\n";
+                                vector<Course> teacherCourses;
+                                for (const auto& course : courses) {
+                                    if (course.getTeacherUsername() == teacher->getUsername()) {
+                                        teacherCourses.push_back(course);
+                                    }
                                 }
-                            }
-                            if (courseEnrollments.empty()) {
-                                cout << "No students enrolled in this course.\n";
+                                if (teacherCourses.empty()) {
+                                    cout << "No courses assigned.\n";
+                                    break;
+                                }
+                                for (size_t i = 0; i < teacherCourses.size(); ++i) {
+                                    cout << i + 1 << ". " << teacherCourses[i].getCourseName()
+                                        << " (" << teacherCourses[i].getCourseCode() << ")\n";
+                                }
+                                int courseChoice;
+                                cout << "Select course (1-" << teacherCourses.size() << "): ";
+                                if (!(cin >> courseChoice)) {
+                                    cin.clear();
+                                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                    cout << "Invalid input. Please enter a number.\n";
+                                    break;
+                                }
+                                cin.ignore();
+                                if (courseChoice < 1 || courseChoice > static_cast<int>(teacherCourses.size())) {
+                                    cout << "Invalid course selection.\n";
+                                    break;
+                                }
+                                cout << "\n--- Select Student to Grade ---\n";
+                                vector<Enrolment*> courseEnrollments;
+                                for (auto* enrollment : enrollments) {
+                                    if (enrollment->getCourse().getCourseCode() == teacherCourses[courseChoice - 1].getCourseCode()) {
+                                        courseEnrollments.push_back(enrollment);
+                                    }
+                                }
+                                if (courseEnrollments.empty()) {
+                                    cout << "No students enrolled in this course.\n";
+                                    break;
+                                }
+                                for (size_t i = 0; i < courseEnrollments.size(); ++i) {
+                                    cout << i + 1 << ". " << courseEnrollments[i]->getStudent().getName()
+                                        << " (Roll No: " << courseEnrollments[i]->getStudent().getRollno() << ")\n";
+                                }
+                                int studentChoice;
+                                cout << "Select student (1-" << courseEnrollments.size() << "): ";
+                                if (!(cin >> studentChoice)) {
+                                    cin.clear();
+                                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                    cout << "Invalid input. Please enter a number.\n";
+                                    break;
+                                }
+                                cin.ignore();
+                                if (studentChoice < 1 || studentChoice > static_cast<int>(courseEnrollments.size())) {
+                                    cout << "Invalid student selection.\n";
+                                    break;
+                                }
+                                teacher->gradeAssignment(*courseEnrollments[studentChoice - 1]);
                                 break;
                             }
-                            for (size_t i = 0; i < courseEnrollments.size(); ++i) {
-                                cout << i + 1 << ". " << courseEnrollments[i]->getStudent().getName()
-                                    << " (Roll No: " << courseEnrollments[i]->getStudent().getRollno() << ")\n";
+                            case 3: teacher->viewStudentsAndGenerateReports(courses, enrollments); break;
+                            case 4: teacherRunning = false; break;
+                            default: cout << "Invalid choice. Please try again.\n";
                             }
-                            int studentChoice;
-                            cout << "Select student (1-" << courseEnrollments.size() << "): ";
-                            cin >> studentChoice;
-                            cin.ignore();
-                            if (studentChoice < 1 || studentChoice > static_cast<int>(courseEnrollments.size())) {
-                                cout << "Invalid student selection.\n";
-                                break;
+                            if (teacherChoice != 4) {
+                                cout << "\nPress Enter to continue...";
+                                cin.ignore();
                             }
-                            teacher->gradeAssignment(*courseEnrollments[studentChoice - 1]);
-                            break;
-                        }
-                        case 3: teacherRunning = false; break;
-                        default: cout << "Invalid choice. Please try again.\n";
                         }
                     }
                 }
-            }
-            else if (role == "student") {
-                StudentUser* student = dynamic_cast<StudentUser*>(currentUser);
-                if (student) {
-                    student->showMenu();
+                else if (role == "student") {
+                    StudentUser* student = dynamic_cast<StudentUser*>(currentUser);
+                    if (student) {
+                        displayHeader("Student Portal - Welcome, " + student->getStudent().getName());
+                        student->showMenu();
+                        currentUser = nullptr; // Reset to fix looping issue
+                    }
                 }
             }
+            else {
+                cout << "\nLogin failed. Invalid username or password.\n";
+                cout << "Press Enter to continue...";
+                cin.ignore();
+            }
+        }
+        else if (choice == 2) {
+            running = false;
         }
         else {
-            cout << "Login failed. Invalid username or password.\n";
-        }
-
-        cout << "\nDo you want to exit the program? (y/n): ";
-        char exitChoice;
-        cin >> exitChoice;
-        cin.ignore();
-        if (exitChoice == 'y' || exitChoice == 'Y') {
-            running = false;
+            cout << "Invalid choice. Please try again.\n";
+            cout << "Press Enter to continue...";
+            cin.ignore();
         }
     }
 
@@ -226,6 +302,7 @@ int main() {
 
     cleanupEnrollments();
 
-    cout << "\nThank you for using Pokeno South Primary School Student Management System.\n";
+    displayHeader("Goodbye");
+    cout << "Thank you for using Pokeno South Primary School Student Management System.\n";
     return 0;
 }

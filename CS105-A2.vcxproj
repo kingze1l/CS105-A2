@@ -134,6 +134,7 @@
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="Enrolment.cpp" />
     <ClCompile Include="Grade.cpp" />
+    <ClCompile Include="PasswordDisplay.cpp" />
     <ClCompile Include="Student.cpp" />
     <ClCompile Include="StudentUser.cpp" />
     <ClCompile Include="Teacher.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="Enrolment.h" />
     <ClInclude Include="Grade.h" />
+    <ClInclude Include="PasswordDisplay.h" />
     <ClInclude Include="Student.h" />
     <ClInclude Include="StudentUser.h" />
     <ClInclude Include="Teacher.h" />

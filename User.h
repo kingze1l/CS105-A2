@@ -15,9 +15,9 @@ public:
     virtual void showMenu() = 0;
     bool authenticate(const std::string& input) const;
 
-    std::string getUsername() const;
-    std::string getRole() const;
-    std::string getPassword() const { return password; }
+    std::string getUsername() const; // Declaration only
+    std::string getRole() const;     // Declaration only
+    std::string getPassword() const { return password; } // Inline definition is fine
 
     User(const User&) = delete;
     User& operator=(const User&) = delete;

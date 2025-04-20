@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <set>
 
 bool DataManager::saveStudents(const std::vector<Student>& students) {
     std::ofstream file(STUDENTS_FILE);
@@ -16,7 +17,6 @@ bool DataManager::saveStudents(const std::vector<Student>& students) {
             << student.getAddress() << "|"
             << student.getContact() << std::endl;
     }
-
     return true;
 }
 
@@ -33,7 +33,6 @@ bool DataManager::saveCourses(const std::vector<Course>& courses) {
             << course.getDescription() << "|"
             << course.getTeacherUsername() << std::endl;
     }
-
     return true;
 }
 
@@ -47,7 +46,6 @@ bool DataManager::saveEnrollments(const std::vector<Enrolment*>& enrollments) {
     for (const auto& enrollment : enrollments) {
         file << enrollment->getStudent().getRollno() << "|"
             << enrollment->getCourse().getCourseCode();
-
         Grade* grade = enrollment->getGrade();
         if (grade) {
             file << "|" << grade->getInternalMark()
@@ -55,7 +53,6 @@ bool DataManager::saveEnrollments(const std::vector<Enrolment*>& enrollments) {
         }
         file << std::endl;
     }
-
     return true;
 }
 
@@ -68,25 +65,28 @@ bool DataManager::saveUsers(const std::vector<std::unique_ptr<User>>& users) {
 
     for (const auto& user : users) {
         file << user->getUsername() << "|"
-            << user->getPassword() << "|"  // Save the actual password
+            << user->getPassword() << "|"
             << user->getRole();
-
         if (user->getRole() == "student") {
             StudentUser* studentUser = dynamic_cast<StudentUser*>(user.get());
             if (studentUser) {
                 file << "|" << studentUser->getStudent().getRollno();
             }
         }
+        else if (user->getRole() == "teacher") {
+            Teacher* teacher = dynamic_cast<Teacher*>(user.get());
+            if (teacher) {
+                file << "|" << teacher->getTeacherName();
+            }
+        }
         file << std::endl;
     }
-
     return true;
 }
 
 bool DataManager::loadStudents(std::vector<Student>& students) {
     std::ifstream file(STUDENTS_FILE);
     if (!file) {
-        std::cerr << "Warning: Could not open file " << STUDENTS_FILE << std::endl;
         std::ofstream createFile(STUDENTS_FILE);
         if (!createFile) {
             std::cerr << "Error: Could not create file " << STUDENTS_FILE << std::endl;
@@ -107,17 +107,22 @@ bool DataManager::loadStudents(std::vector<Student>& students) {
         std::getline(ss, address, '|');
         std::getline(ss, contact, '|');
 
-        int rollno = std::stoi(rollnoStr);
-        students.emplace_back(rollno, name, address, contact);
+        try {
+            int rollno = std::stoi(rollnoStr);
+            if (!name.empty()) {
+                students.emplace_back(rollno, name, address, contact);
+            }
+        }
+        catch (...) {
+            continue;
+        }
     }
-
     return true;
 }
 
 bool DataManager::loadCourses(std::vector<Course>& courses) {
     std::ifstream file(COURSES_FILE);
     if (!file) {
-        std::cerr << "Warning: Could not open file " << COURSES_FILE << std::endl;
         std::ofstream createFile(COURSES_FILE);
         if (!createFile) {
             std::cerr << "Error: Could not create file " << COURSES_FILE << std::endl;
@@ -138,17 +143,16 @@ bool DataManager::loadCourses(std::vector<Course>& courses) {
         std::getline(ss, description, '|');
         std::getline(ss, teacher, '|');
 
-        courses.emplace_back(name, code, description, teacher);
+        if (!name.empty() && !code.empty()) {
+            courses.emplace_back(name, code, description, teacher);
+        }
     }
-
     return true;
 }
 
-bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
-    const std::vector<Student>& students) {
+bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users, const std::vector<Student>& students) {
     std::ifstream file(USERS_FILE);
     if (!file) {
-        std::cerr << "Warning: Could not open file " << USERS_FILE << std::endl;
         std::ofstream createFile(USERS_FILE);
         if (!createFile) {
             std::cerr << "Error: Could not create file " << USERS_FILE << std::endl;
@@ -160,36 +164,46 @@ bool DataManager::loadUsers(std::vector<std::unique_ptr<User>>& users,
 
     users.clear();
     std::string line;
+    std::set<std::string> usernames;
     while (std::getline(file, line)) {
         std::stringstream ss(line);
-        std::string username, password, role, rollnoStr;
+        std::string username, password, role, extra;
 
         std::getline(ss, username, '|');
         std::getline(ss, password, '|');
         std::getline(ss, role, '|');
+        std::getline(ss, extra, '|');
+
+        if (usernames.find(username) != usernames.end()) {
+            continue; // Skip duplicate usernames
+        }
+        usernames.insert(username);
 
         if (role == "admin") {
             users.push_back(std::make_unique<Admin>(username, password));
         }
         else if (role == "teacher") {
-            users.push_back(std::make_unique<Teacher>(username, password, "teacher" + username));
+            users.push_back(std::make_unique<Teacher>(username, password, extra.empty() ? "Teacher " + username : extra));
         }
-        else if (role == "student" && std::getline(ss, rollnoStr, '|')) {
-            int rollno = std::stoi(rollnoStr);
-            Student studentObj = findStudentByRollNo(rollno, students);
-            users.push_back(std::make_unique<StudentUser>(username, password, studentObj));
+        else if (role == "student" && !extra.empty()) {
+            try {
+                int rollno = std::stoi(extra);
+                Student studentObj = findStudentByRollNo(rollno, students);
+                if (studentObj.getRollno() != 0) {
+                    users.push_back(std::make_unique<StudentUser>(username, password, studentObj));
+                }
+            }
+            catch (...) {
+                continue;
+            }
         }
     }
-
     return true;
 }
 
-bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
-    const std::vector<Student>& students,
-    const std::vector<Course>& courses) {
+bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments, const std::vector<Student>& students, const std::vector<Course>& courses) {
     std::ifstream file(ENROLLMENTS_FILE);
     if (!file) {
-        std::cerr << "Warning: Could not open file " << ENROLLMENTS_FILE << std::endl;
         std::ofstream createFile(ENROLLMENTS_FILE);
         if (!createFile) {
             std::cerr << "Error: Could not create file " << ENROLLMENTS_FILE << std::endl;
@@ -205,6 +219,7 @@ bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
     enrollments.clear();
 
     std::string line;
+    std::set<std::string> enrollmentKeys;
     while (std::getline(file, line)) {
         std::stringstream ss(line);
         std::string rollnoStr, courseCode, internalMarkStr, finalMarkStr;
@@ -212,28 +227,38 @@ bool DataManager::loadEnrollments(std::vector<Enrolment*>& enrollments,
         std::getline(ss, rollnoStr, '|');
         std::getline(ss, courseCode, '|');
 
-        int rollno = std::stoi(rollnoStr);
-
-        Student student = findStudentByRollNo(rollno, students);
-        Course course = findCourseByCode(courseCode, courses);
-
-        Enrolment* enrollment = new Enrolment(student, course);
-
-        if (std::getline(ss, internalMarkStr, '|') &&
-            std::getline(ss, finalMarkStr, '|')) {
-
-            float internalMark = std::stof(internalMarkStr);
-            float finalMark = std::stof(finalMarkStr);
-
-            PrimaryGrade* grade = new PrimaryGrade();
-            grade->setInternalMark(internalMark);
-            grade->setFinalMark(finalMark);
-            enrollment->addGrade(grade);
+        std::string key = rollnoStr + "|" + courseCode;
+        if (enrollmentKeys.find(key) != enrollmentKeys.end()) {
+            continue; // Skip duplicate enrollments
         }
+        enrollmentKeys.insert(key);
 
-        enrollments.push_back(enrollment);
+        try {
+            int rollno = std::stoi(rollnoStr);
+            Student student = findStudentByRollNo(rollno, students);
+            Course course = findCourseByCode(courseCode, courses);
+
+            if (student.getRollno() == 0 || course.getCourseCode() == "Unknown") {
+                continue;
+            }
+
+            Enrolment* enrollment = new Enrolment(student, course);
+
+            if (std::getline(ss, internalMarkStr, '|') && std::getline(ss, finalMarkStr, '|')) {
+                float internalMark = std::stof(internalMarkStr);
+                float finalMark = std::stof(finalMarkStr);
+                PrimaryGrade* grade = new PrimaryGrade();
+                grade->setInternalMark(internalMark);
+                grade->setFinalMark(finalMark);
+                enrollment->addGrade(grade);
+            }
+
+            enrollments.push_back(enrollment);
+        }
+        catch (...) {
+            continue;
+        }
     }
-
     return true;
 }
 

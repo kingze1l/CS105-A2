@@ -1,7 +1,4 @@
-admin|password|admin
-teacher|password|teacher
-Joan|password|student|511698032
-student1|password|student|511698032
-samijan|password|student|511698032
-123|123|teacher
-samiullah|samiullah123|student|789
+admin|admin123|admin
+teacher|teacher123|teacher|Teacher teacher
+123|123|teacher|Teacher 123
+student1|student123|student|1

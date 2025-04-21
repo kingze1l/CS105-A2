@@ -17,7 +17,12 @@ public:
 
     std::string getUsername() const; // Declaration only
     std::string getRole() const;     // Declaration only
-    std::string getPassword() const { return password; } // Inline definition is fine
+    std::string getPassword() const { return password; } 
+    
+	// Setters
+	void setUsername(const std::string& uname);
+	void setPassword(const std::string& pwd);
+
 
     User(const User&) = delete;
     User& operator=(const User&) = delete;

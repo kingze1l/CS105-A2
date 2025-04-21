@@ -1,5 +1,7 @@
 admin|admin123|admin
 teacher|teacher123|teacher|Teacher teacher
-123|123|teacher|Teacher 123
+angelo|123|teacher|angelo de 
 student1|student123|student|1
-test1|123|teacher|123333
+kevindowd1|123|teacher|kevin dowd 
+nasirsir|123|student|333
+kabir|111|teacher|kabir

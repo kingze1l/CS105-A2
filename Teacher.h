@@ -14,5 +14,9 @@ public:
     void showAssignedCourses(const std::vector<Course>& courses) const;
     void showMenu() override;
     void gradeAssignment(Enrolment& enrolment);
-    void viewStudentsAndGenerateReports(const std::vector<Course>& courses, const std::vector<Enrolment*>& enrollments) const;
+    void viewStudentsAndGenerateReports(const std::vector<Course>& courses, const std::vector<Enrolment*>& enrollments);
+	void editGrade(Enrolment& enrolment);
+	void deleteGrade(Enrolment& enrolment);
+
+    void setTeacherName(const std::string& name);
 };

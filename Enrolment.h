@@ -2,6 +2,8 @@
 #include "Student.h"
 #include "Course.h"
 #include "Grade.h"
+#include <fstream>
+
 
 class Enrolment {
 private:
@@ -15,6 +17,8 @@ public:
     void generateReport() const;
     const Student& getStudent() const { return student; }
     const Course& getCourse() const { return course; }
+
+    void generateReport(std::ofstream& outFile) const;
 
     // ADDED: Accessor method for grade
     Grade* getGrade() const { return grade; }

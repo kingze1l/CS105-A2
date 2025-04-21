@@ -1,3 +1,2 @@
-Mathematics|MATH101|Basic Calculus|Dr. Smith
+Advanced Mathematics|MATH101|Basic Calculus|teacher
 English|ENG101|Grammar and Composition|Ms. Johnson
-software|1234|tech|teacher

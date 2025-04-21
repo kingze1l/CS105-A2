@@ -43,6 +43,13 @@ std::string Course::getCourseCode() const { return courseCode; }
 std::string Course::getDescription() const { return description; }
 std::string Course::getTeacherUsername() const { return teacherUsername; }
 
+
+//setters implementation
+void Course::setCourseName(const std::string& cName) { courseName = cName; }
+void Course::setCourseCode(const std::string& cCode) { courseCode = cCode; }
+void Course::setDescription(const std::string& desc) { description = desc; }
+void Course::setTeacherUsername(const std::string& teacherUsername) { this->teacherUsername = teacherUsername; }
+
 void Course::display() const {
     std::cout << "Course Name: " << courseName << "\n"
         << "Course Code: " << courseCode << "\n"

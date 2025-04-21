@@ -27,9 +27,17 @@ public:
         const AuthSystem& authSystem);
     void editStudent(std::vector<Student>& students, AuthSystem& authSystem);
     void deleteStudent(std::vector<Student>& students, AuthSystem& authSystem, std::vector<Enrolment*>& enrollments);
-
-private:
+    void editCourse(std::vector<Course>& courses, AuthSystem& authSystem);
+    void deleteCourse(std::vector<Course>& courses, std::vector<Enrolment*>& enrollments, AuthSystem& authSystem);
+    void editEnrolment(std::vector<Enrolment*>& enrollments, const std::vector<Student>& students, const std::vector<Course>& courses, AuthSystem& authSystem);
+    Enrolment* selectEnrolment(const std::vector<Enrolment*>& enrollments) const;
+    void deleteEnrolment(std::vector<Enrolment*>& enrollments, AuthSystem& authSystem);
+    void editUser(AuthSystem& authSystem, std::vector<Student>& students, std::vector<Course>& courses);
+    User* selectUser(const std::vector<std::unique_ptr<User>>& users) const;
+    void deleteUser(AuthSystem& authSystem, std::vector<Student>& students, std::vector<Course>& courses, std::vector<Enrolment*>& enrollments);
+    void generateSystemReport(const std::vector<Student>& students, const std::vector<Course>& courses, const std::vector<Enrolment*>& enrollments);
     void printAdminHeader() const;
+
 };
 
 // Declaration for password masking function

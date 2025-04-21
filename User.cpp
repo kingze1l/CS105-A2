@@ -17,3 +17,5 @@ std::string User::getUsername() const {
 std::string User::getRole() const {
     return role;
 }
+void User::setUsername(const std::string& uname) { username = uname; }
+void User::setPassword(const std::string& pwd) { password = pwd; }

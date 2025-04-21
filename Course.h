@@ -22,5 +22,13 @@ public:
    // std::string getTeacher() const;
     std::string getTeacherUsername() const;  // Add this new getter
 
+	//setters
+    // Add setters
+    void setCourseName(const std::string& cName);
+    void setCourseCode(const std::string& cCode);
+    void setDescription(const std::string& desc);
+    void setTeacherUsername(const std::string& teacherUsername);
+
+
     void display() const;
 };

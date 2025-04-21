@@ -10,6 +10,8 @@ std::string Student::getName() const { return name; }
 std::string Student::getAddress() const { return address; }
 std::string Student::getContact() const { return contact; }
 
+
+void Student::setRollno(int newRollno) { rollno = newRollno; }
 void Student::setName(const std::string& n) { name = n; }
 void Student::setAddress(const std::string& addr) { address = addr; }
 void Student::setContact(const std::string& cnt) { contact = cnt; }
